@@ -31,6 +31,7 @@ FAILURE_LIMIT = getattr(settings, 'AXES_LOGIN_FAILURE_LIMIT', 3)
 
 # see if the user has set axes to lock out logins after failure limit
 LOCK_OUT_AT_FAILURE = getattr(settings, 'AXES_LOCK_OUT_AT_FAILURE', True)
+LOCK_OUT_BY_IP = getattr(settings, 'AXES_LOCK_OUT_BY_IP', True)
 
 USE_USER_AGENT = getattr(settings, 'AXES_USE_USER_AGENT', False)
 
@@ -167,7 +168,9 @@ def _get_user_attempts(request):
         if USE_USER_AGENT:
             params['user_agent'] = ua
 
-        attempts = AccessAttempt.objects.filter(**params)
+        if LOCK_OUT_BY_IP:
+            attempts = AccessAttempt.objects.filter(**params)
+
         if username and not ip_in_whitelist(ip):
             del params['ip_address']
             params['username'] = username
